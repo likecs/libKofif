@@ -15,6 +15,8 @@
 #include <string>;
 using namespace std;
 
+const int SKIPLIST_MAX_HEIGHT = 13;
+
 template < class LinkedType >
 struct Node
 {
@@ -114,7 +116,8 @@ class LinkedPtrSkipList
 					Path[index]->Next[index] = node;
 				}
 			} else {
-				node->Next = NULL;
+				node->Next = new Node<LinkedType>*[1];
+				node->Next[0] = NULL;
 			}
 			return node;
 		}
@@ -128,8 +131,14 @@ class LinkedPtrSkipList
 			Node<LinkedType>** path = new Node<LinkedType>*[this->mHeight];
 
 			Node<LinkedType>* node = this->mpHead[this->mHeight-1]; //Get the heighest node
+			if(this->mpHead[0]->Key.compare(Key) < 0) {
+				path[0] = this->mpHead[0];
+			} else {
+				path[0] = NULL;
+			}
+
 			for(int index = this->mHeight - 1; ((index >= 0) && (node->Next != NULL)); index--) {
-				while(node->Next[index]->Key.compare(Key) > 0) {
+				while(node->Next[index]->Key.compare(Key) < 0) {
 					node = node->Next[index];
 				}
 
@@ -166,10 +175,16 @@ class LinkedPtrSkipList
 
 			// cycle through bits untill we reach a '1' bit, which
 			// signifies the end of a cycle or we pass the current height
+			int nextLevel = this->mHeight;
+
+			// only allow the next level to be higher than the current highet
+			// if we haven't yet reached the maximum height
+			if(this->mHeight != SKIPLIST_MAX_HEIGHT) {
+				nextLevel = this->mHeight + 1;
+			}
+
 			int b = 0;
 			int height;
-			int nextLevel = this->mHeight + 1;
-
 			for(height = 0; height < nextLevel  && b != 1; height++) {
 				// compare the first bit. If it is '1' then we will end the loop here
 				b = bits & 1;
