@@ -4,7 +4,7 @@
 #include <time.h>
 #include <iostream>
 #include <string.h>
-#include "LinkedPtrSkipList.hpp"
+#include "LinkedPtrSkipList.cpp"
 
 class MyObj
 {
@@ -12,7 +12,12 @@ class MyObj
 	int ID;
 };
 
+MyObj* CreateTestObj() {
+	static int counter = 0;
 
+	MyObj* obj = new MyObj();
+	obj->ID = counter++;
+}
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  main
@@ -22,11 +27,19 @@ class MyObj
 int main ( int argc, char *argv[] )
 {
 	LinkedPtrSkipList<MyObj>* list = new LinkedPtrSkipList<MyObj>();
-	MyObj* obj = new MyObj();
-	obj->ID = 1;
-	string keyA = "A";
-	list->Find(keyA);
-	list->Insert(keyA,obj);
+	list->Insert("A",CreateTestObj());
+	list->Insert("B",CreateTestObj());
+	list->Insert("C",CreateTestObj());
+	list->Insert("E",CreateTestObj());
+	list->Insert("D",CreateTestObj());
+	list->Insert("Bag",CreateTestObj());
+	list->Insert("Aag",CreateTestObj());
+	list->Insert("ded",CreateTestObj());
+	list->Insert("Ded",CreateTestObj());
+	list->Insert("zed",CreateTestObj());
+
+
+	list->DebugPrint();
 
 	return EXIT_SUCCESS;
 }				/* ----------  end of function main  ---------- */
