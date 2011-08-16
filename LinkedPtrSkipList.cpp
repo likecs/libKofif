@@ -36,7 +36,7 @@ struct Node
 /*
  * =====================================================================================
  *        Class: LinkedPtrSkipList
- *  Description: A Linked List implementation, designed to allow a string key associated
+ *  Description: A Linked Skip List implementation, designed to allow a string key associated
  *               with a pointer to an object by a specific template specified class. 
  * =====================================================================================
  */
