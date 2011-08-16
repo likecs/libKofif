@@ -63,18 +63,49 @@ class LinkedPtrSkipList
 			this->clear();
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  operator =
+		 *  Description:  This method allows us to create a copy of another Skip List.
+		 *  		  This copying process copies the Key-Value pairs in the existing list
+		 *  		  but does not duplicate the skip structure. Rather it redispurses
+		 *  		  the objects using it's Insert method to evenly redistribute them.
+		 *  		  This is useful in cases where a list may be unevenly distrubuted
+		 *  		  following multiple removals and insertions.
+		 * =====================================================================================
+		 */
 		LinkedPtrSkipList& operator = ( const LinkedPtrSkipList &other )
 		{
 
 			this->clear();
-
-
+			
+			if(other->mHeight > 0) {
+				Node<LinkedType> node = other->mpHead[0];
+				while(node != NULL) {
+					this->insert(node->Key,node->Object);
+					node = node->Next[0];
+				}
+			}
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  size
+		 *  Description:  This method returns the number og Objects stored in the Skip list.
+		 * =====================================================================================
+		 */
 		int size() {
 			return this->mCounter;
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  remove
+		 *  Description:  This method removes an object from the List by its key and returns it. 
+		 *  		  This method will not delete the Object itself, as the Skip list does 
+		 *  		  not manage the memory state of the objects it stores in any way.
+		 * =====================================================================================
+		 */
 		LinkedType* remove(string Key)
 		{
 			// Check if the list is empty
@@ -115,6 +146,13 @@ class LinkedPtrSkipList
 			return object; 
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  insert
+		 *  Description:  This method inserts a new Object into the List. The object's retrieval
+		 *  		  key must be specified as well.
+		 * =====================================================================================
+		 */
 		void insert(string Key, LinkedType* Object)
 		{
 
@@ -166,6 +204,13 @@ class LinkedPtrSkipList
 			this->mCounter++;
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  find
+		 *  Description:  This method retrieves an Object which is stored in the Skip list using
+		 *  		  it's key.
+		 * =====================================================================================
+		 */
 		LinkedType* find(string Key) 
 		{
 			Node<LinkedType>* node = NULL;
@@ -182,10 +227,25 @@ class LinkedPtrSkipList
 			return NULL;
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  exists
+		 *  Description:  This method checkes whether a particular Key coresponds to an Object
+		 *  		  inside the List.
+		 * =====================================================================================
+		 */
 		bool exists(string Key) {
 			return (this->find(Key) != NULL);
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  clear
+		 *  Description:  This method removes all the Objects from the Skip List. It does not
+		 *  		  delete the Objects themselves, as the container does not manage the
+		 *  		  object's state in memory in any way.
+		 * =====================================================================================
+		 */
 		void clear() {
 
 			if(this->mHeight > 0) {
@@ -253,6 +313,20 @@ class LinkedPtrSkipList
 			return node;
 		}
 
+		/* 
+		 * ===  FUNCTION  ======================================================================
+		 *         Name:  tracePathToKey
+		 *  Description:  This method is the heart of the SkipList algoritham. It recieves a Key
+		 *  		  as input and returns an array in which each cell coresponds to a 
+		 *  		  single layer of the Skip list. In each one of these layers the method
+		 *  		  will place apointer to the node *which points to the node we are 
+		 *  		  looking for* OR *which ponts to where that key should be inserted*.
+		 *  		  That means that if key X should go imeditely after key Y on layer #2
+		 *  		  then the array will contain a pointer in index 1 (arrays start at 0)
+		 *  		  which points to node Y.
+		 *  		  We use this in order to find nodes and to figure out where to insert them.
+		 * =====================================================================================
+		 */
 		Node<LinkedType>** tracePathToKey(string Key, Node<LinkedType> *& NodeOfKeyValue = NULL, bool BreakOnFindingKeyInList = false)
 		{
 
