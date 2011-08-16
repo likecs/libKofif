@@ -98,5 +98,9 @@ int main ( int argc, char *argv[] )
 		cout << endl << "Debil doesn't exist..." << endl;
 	}
 
+	cout << endl;
+	LinkedPtrSkipList<MyObj>* listcopy = new LinkedPtrSkipList<MyObj>(list);
+	listcopy->debugPrint();
+
 	return EXIT_SUCCESS;
 }				/* ----------  end of function main  ---------- */

@@ -52,10 +52,13 @@ class LinkedPtrSkipList
 			this->mCounter = 0;
 		}
 
-		LinkedPtrSkipList ( const LinkedPtrSkipList &other ) 
+		LinkedPtrSkipList ( const LinkedPtrSkipList* other ) 
 		{
 			this->mHeight=0;
 			this->mpHead = NULL;	
+			this->mCounter = 0;
+
+			this->mirror(other);
 		}
 
 		~LinkedPtrSkipList () 
@@ -74,18 +77,9 @@ class LinkedPtrSkipList
 		 *  		  following multiple removals and insertions.
 		 * =====================================================================================
 		 */
-		LinkedPtrSkipList& operator = ( const LinkedPtrSkipList &other )
+		LinkedPtrSkipList& operator = ( const LinkedPtrSkipList* other )
 		{
-
-			this->clear();
-			
-			if(other->mHeight > 0) {
-				Node<LinkedType> node = other->mpHead[0];
-				while(node != NULL) {
-					this->insert(node->Key,node->Object);
-					node = node->Next[0];
-				}
-			}
+			this->mirror(other);
 		}
 
 		/* 
@@ -263,6 +257,7 @@ class LinkedPtrSkipList
 				}
 
 				this->mHeight = 0;
+				this->mCounter = 0;
 			}
 		}
 		
@@ -293,6 +288,19 @@ class LinkedPtrSkipList
 				this->mpHead = new Node<LinkedType>*[10]; //Define default size
 				for(int index = 0; index < 10; index++) {
 					this->mpHead[index] = NULL;
+				}
+			}
+		}
+
+		void mirror(const LinkedPtrSkipList* other) {
+
+			this->clear();
+			
+			if(other->mHeight > 0) {
+				Node<LinkedType>* node = other->mpHead[0];
+				while(node != NULL) {
+					this->insert(node->Key,node->Object);
+					node = node->Next[0];
 				}
 			}
 		}
