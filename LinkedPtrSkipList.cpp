@@ -4,7 +4,7 @@
 
 #define	DEBUGSKIPLIST1
 
-#include <cstdlib>
+#include <cstdlib>;
 #include <string>;
 #include <iostream>;
 using namespace std;
@@ -49,6 +49,7 @@ class LinkedPtrSkipList
 		{
 			this->mHeight=0;
 			this->mpHead = NULL;	
+			this->mCounter = 0;
 		}
 
 		LinkedPtrSkipList ( const LinkedPtrSkipList &other ) 
@@ -67,8 +68,58 @@ class LinkedPtrSkipList
 
 		}
 
+		int Size() {
+			return this->mCounter;
+		}
+
+		LinkedType* Remove(string Key, bool Delete)
+		{
+			// Check if the list is empty
+			if(this->mHeight == 0) {
+				return NULL;
+			}
+			
+			Node<LinkedType>* node = NULL; 
+
+			// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
+			Node<LinkedType>** nodePath = this->TracePathToKey(Key,node,false);
+
+			if(node == NULL || nodePath == NULL) {
+				// If no node with this key was found or no path to it was found, then means there is no node to remove
+				return NULL;
+			}
+
+			int numberOfLayersToRealign = node->Height;
+			
+			for(int layerIndex = 0; layerIndex < numberOfLayersToRealign; layerIndex++) {
+				if(nodePath[layerIndex] == NULL) {
+					// the node being removed is first in this layer - we'll replace him
+					// in the head with the node he is pointing to
+					this->mpHead[layerIndex] = node->Next[layerIndex];
+				} else {
+					nodePath[layerIndex]->Next[layerIndex] = node->Next[layerIndex];
+				}
+			}
+
+			// Now that we have removed the node from the skiplist we can delete it
+			LinkedType* object = node->Object;
+
+			// we don't want to delete the Next array, as the nodes it is pointing to are still in the list
+			node->Next = NULL;
+			delete node;
+			this->mCounter--;
+
+			if(Delete) {
+				delete object;
+				object = NULL;
+			}
+
+			return object; 
+		}
+
 		void Insert(string Key, LinkedType* Object)
 		{
+
 			// If this is the first node ever - just create it and insert it
 			if(this->mHeight == 0) {
 
@@ -78,53 +129,19 @@ class LinkedPtrSkipList
 				this->mpHead[0] = CreateNode(Key,Object);
 				this->mHeight = 1;
 			} else {
-			
+				Node<LinkedType>* node = NULL;
+
 				// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
-				Node<LinkedType>** nodePath = new Node<LinkedType>*[this->mHeight];
+				Node<LinkedType>** nodePath = this->TracePathToKey(Key,node,true);
 
-				Node<LinkedType>* currentNode = NULL;
-				int layerIndex = this->mHeight-1;
-				while(currentNode == NULL && layerIndex >= 0) {
-					if(this->mpHead[layerIndex] != NULL) {
-						int currentKeyComparison = this->mpHead[layerIndex]->Key.compare(Key);
-#ifdef DEBUGSKIPLIST
-						cout << this->mpHead[layerIndex]->Key << " compareed to " << Key << " is " << currentKeyComparison << endl;
-#endif
-						if(currentKeyComparison < 0) {
-							// the first node in this layer is smaller than the Key
-							currentNode = this->mpHead[layerIndex];
-							nodePath[layerIndex] = currentNode;
-						} else if(currentKeyComparison == 0) {
-							// found another node with the same Key - replace it's Object and call it a day
-							this->mpHead[layerIndex]->Object = Object;
-							return;
-						} else {
-							// the first node in the layer is larger and the new Node should be inserted before it
-							// We will place NULL in the path's index to signify that this layer should point at the
-							// new node once it is inserted.
-							nodePath[layerIndex] = NULL;
-							
-							// move down one layer and keep on searching for a value smaler than what we are inserting
-							layerIndex--;
-						}
-					}
-
+				if(node != NULL) {
+					// If the ndoe is not NULL then the TracePathToKey method  found another node with the same value
+					// We will simply replace that node's Object with the new one and the insertion action is complete
+					node->Object = Object;
+					return;
 				}
 
-				// find the path to the new node's proper place
-				// Note that this loop uses the previously set layerIndex which will already point
-				// to the layer index that contains the currentNote
-				for(; layerIndex >= 0 && currentNode != NULL; layerIndex--) {
-					while(currentNode->Next[layerIndex] != NULL && currentNode->Next[layerIndex]->Key.compare(Key) < 0) {
-#ifdef DEBUGSKIPLIST
-						cout << currentNode->Next[layerIndex]->Key << " is smaller than " << Key << endl;
-#endif
-						currentNode = currentNode->Next[layerIndex];
-					}
-					nodePath[layerIndex] = currentNode;
-				}
-
-				Node<LinkedType>* node = this->CreateNode(Key,Object,GenerateRandomHeight());
+				node = this->CreateNode(Key,Object,GenerateRandomHeight());
 				
 				int numberOfLayersToCopyFromPath = node->Height;
 				if(node->Height > this->mHeight) {
@@ -135,7 +152,7 @@ class LinkedPtrSkipList
 				}
 
 				
-				for(layerIndex = 0; layerIndex < numberOfLayersToCopyFromPath; layerIndex++) {
+				for(int layerIndex = 0; layerIndex < numberOfLayersToCopyFromPath; layerIndex++) {
 					if(nodePath[layerIndex] == NULL) {
 						// insert the node before any other node in the current layer
 						node->Next[layerIndex] = this->mpHead[layerIndex];
@@ -146,20 +163,41 @@ class LinkedPtrSkipList
 					}
 				}
 			}
+			
+			// increase the node count
+			this->mCounter++;
 		}
 
 		LinkedType* Find(string Key) 
 		{
+			Node<LinkedType>* node = NULL;
+
+			// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
+			Node<LinkedType>** nodePath = this->TracePathToKey(Key,node,true);
+
+			if(node != NULL) {
+				// If the ndoe is not NULL then the TracePathToKey method  found another node with the same value
+				// We will simply replace that node's Object with the new one and the insertion action is complete
+				return node->Object;
+			}
+
 			return NULL;
 		}
 
-		void DebugPrint()
+		bool Exists(string Key) {
+			return (this->Find(Key) != NULL);
+		}
+
+		void DebugPrint(bool PrintAddress = false)
 		{
 			for(int n = this->mHeight-1; n >= 0; n--) {
 				Node<LinkedType>* node = this->mpHead[n];
 				cout << "|" << (n+1) << "|";
 				while(node != NULL) {
 					cout << "->" << node->Key;
+					if(PrintAddress) {
+						cout << " [" << &node->Object << "]";
+					}
 					node = node->Next[n];
 				}
 
@@ -192,9 +230,79 @@ class LinkedPtrSkipList
 			}
 
 #ifdef DEBUGSKIPLIST
-			cout << "Create " << Key << " with height " << Height << endl;
+			cout << "Create " << Key << " with height " << Height << " and located at " << &node << endl;
 #endif
 			return node;
+		}
+
+		Node<LinkedType>** TracePathToKey(string Key, Node<LinkedType> *& NodeOfKeyValue = NULL, bool BreakOnFindingKeyInList = false)
+		{
+
+			// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
+			Node<LinkedType>** nodePath = new Node<LinkedType>*[this->mHeight];
+
+			Node<LinkedType>* currentNode = NULL;
+			int layerIndex = this->mHeight-1;
+			while(currentNode == NULL && layerIndex >= 0) {
+				if(this->mpHead[layerIndex] != NULL) {
+					int currentKeyComparison = this->mpHead[layerIndex]->Key.compare(Key);
+#ifdef DEBUGSKIPLIST
+					cout << this->mpHead[layerIndex]->Key << " compareed to " << Key << " is " << currentKeyComparison << endl;
+#endif
+					if(currentKeyComparison < 0) {
+						// the first node in this layer is smaller than the Key
+						currentNode = this->mpHead[layerIndex];
+						nodePath[layerIndex] = currentNode;
+					} else if(currentKeyComparison == 0) {
+						// found another node with the same Key - return it using the out parameter and end the function's logic
+						NodeOfKeyValue = this->mpHead[layerIndex];
+						if(BreakOnFindingKeyInList) {
+							return NULL;
+						} else {
+							// if we don't intend on stopping the search (which means we still want to compute
+							// the whole path, we'll place NULL in the current layer's spot - this denotes that the head points
+							// to the requested Key
+							nodePath[layerIndex] = NULL;
+							layerIndex--;
+						}
+					} else {
+						// the first node in the layer is larger and the new Node should be inserted before it
+						// We will place NULL in the path's index to signify that this layer should point at the
+						// new node once it is inserted.
+						nodePath[layerIndex] = NULL;
+						
+						// move down one layer and keep on searching for a value smaler than what we are inserting
+						layerIndex--;
+					}
+				}
+
+			}
+
+			// find the path to the new node's proper place
+			// Note that this loop uses the previously set layerIndex which will already point
+			// to the layer index that contains the currentNote
+			for(/* No initialization, we reuse the layerIndex variable */; layerIndex >= 0 && currentNode != NULL; layerIndex--) {
+				while(currentNode->Next[layerIndex] != NULL && currentNode->Next[layerIndex]->Key.compare(Key) < 0) {
+#ifdef DEBUGSKIPLIST
+					cout << currentNode->Next[layerIndex]->Key << " is smaller than " << Key << endl;
+#endif
+					currentNode = currentNode->Next[layerIndex];
+				}
+
+				if(currentNode->Next[layerIndex] != NULL && currentNode->Next[layerIndex]->Key.compare(Key) == 0) {
+					// found another node with the same Key - return it using the out parameter and end the function's logic
+					NodeOfKeyValue = currentNode->Next[layerIndex];
+#ifdef DEBUGSKIPLIST
+					cout << "Replaced Object under key " << Key << endl;
+#endif
+					if(BreakOnFindingKeyInList) {
+						return NULL;
+					}
+				}
+				nodePath[layerIndex] = currentNode;
+			}
+
+			return nodePath;
 		}
 
 		/* 
@@ -247,6 +355,7 @@ class LinkedPtrSkipList
 		}
 
 		int 			mHeight;
+		int			mCounter;
 		Node<LinkedType>**	mpHead;
 }; /* -----  end of template class LinkedPtrSkipList  ----- */
 
