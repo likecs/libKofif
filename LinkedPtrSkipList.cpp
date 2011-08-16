@@ -60,19 +60,22 @@ class LinkedPtrSkipList
 
 		~LinkedPtrSkipList () 
 		{
-
+			this->clear();
 		}
 
 		LinkedPtrSkipList& operator = ( const LinkedPtrSkipList &other )
 		{
 
+			this->clear();
+
+
 		}
 
-		int Size() {
+		int size() {
 			return this->mCounter;
 		}
 
-		LinkedType* Remove(string Key, bool Delete)
+		LinkedType* remove(string Key)
 		{
 			// Check if the list is empty
 			if(this->mHeight == 0) {
@@ -82,7 +85,7 @@ class LinkedPtrSkipList
 			Node<LinkedType>* node = NULL; 
 
 			// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
-			Node<LinkedType>** nodePath = this->TracePathToKey(Key,node,false);
+			Node<LinkedType>** nodePath = this->tracePathToKey(Key,node,false);
 
 			if(node == NULL || nodePath == NULL) {
 				// If no node with this key was found or no path to it was found, then means there is no node to remove
@@ -109,15 +112,10 @@ class LinkedPtrSkipList
 			delete node;
 			this->mCounter--;
 
-			if(Delete) {
-				delete object;
-				object = NULL;
-			}
-
 			return object; 
 		}
 
-		void Insert(string Key, LinkedType* Object)
+		void insert(string Key, LinkedType* Object)
 		{
 
 			// If this is the first node ever - just create it and insert it
@@ -126,13 +124,13 @@ class LinkedPtrSkipList
 				this->init();
 				
 				// There are no nodes prior to this one
-				this->mpHead[0] = CreateNode(Key,Object);
+				this->mpHead[0] = createNode(Key,Object);
 				this->mHeight = 1;
 			} else {
 				Node<LinkedType>* node = NULL;
 
 				// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
-				Node<LinkedType>** nodePath = this->TracePathToKey(Key,node,true);
+				Node<LinkedType>** nodePath = this->tracePathToKey(Key,node,true);
 
 				if(node != NULL) {
 					// If the ndoe is not NULL then the TracePathToKey method  found another node with the same value
@@ -141,7 +139,7 @@ class LinkedPtrSkipList
 					return;
 				}
 
-				node = this->CreateNode(Key,Object,GenerateRandomHeight());
+				node = this->createNode(Key,Object,generateRandomHeight());
 				
 				int numberOfLayersToCopyFromPath = node->Height;
 				if(node->Height > this->mHeight) {
@@ -168,12 +166,12 @@ class LinkedPtrSkipList
 			this->mCounter++;
 		}
 
-		LinkedType* Find(string Key) 
+		LinkedType* find(string Key) 
 		{
 			Node<LinkedType>* node = NULL;
 
 			// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
-			Node<LinkedType>** nodePath = this->TracePathToKey(Key,node,true);
+			Node<LinkedType>** nodePath = this->tracePathToKey(Key,node,true);
 
 			if(node != NULL) {
 				// If the ndoe is not NULL then the TracePathToKey method  found another node with the same value
@@ -184,11 +182,31 @@ class LinkedPtrSkipList
 			return NULL;
 		}
 
-		bool Exists(string Key) {
-			return (this->Find(Key) != NULL);
+		bool exists(string Key) {
+			return (this->find(Key) != NULL);
 		}
 
-		void DebugPrint(bool PrintAddress = false)
+		void clear() {
+
+			if(this->mHeight > 0) {
+				Node<LinkedType>* node = this->mpHead[0];
+
+				while(node != NULL) {
+					Node<LinkedType>* tempNode = node->Next[0];
+					node->Object = NULL;
+					delete node;
+					node = tempNode;
+				}
+
+				for(int layerIndex = 0; layerIndex < this->mHeight; layerIndex++) {
+					this->mpHead[layerIndex] = NULL;
+				}
+
+				this->mHeight = 0;
+			}
+		}
+		
+		void debugPrint(bool PrintAddress = false)
 		{
 			for(int n = this->mHeight-1; n >= 0; n--) {
 				Node<LinkedType>* node = this->mpHead[n];
@@ -219,7 +237,7 @@ class LinkedPtrSkipList
 			}
 		}
 
-		Node<LinkedType>* CreateNode(string Key, LinkedType* Object, int Height = 1) {
+		Node<LinkedType>* createNode(string Key, LinkedType* Object, int Height = 1) {
 			Node<LinkedType>* node = new Node<LinkedType>();
 			node->Key = Key;
 			node->Object = Object;
@@ -235,7 +253,7 @@ class LinkedPtrSkipList
 			return node;
 		}
 
-		Node<LinkedType>** TracePathToKey(string Key, Node<LinkedType> *& NodeOfKeyValue = NULL, bool BreakOnFindingKeyInList = false)
+		Node<LinkedType>** tracePathToKey(string Key, Node<LinkedType> *& NodeOfKeyValue = NULL, bool BreakOnFindingKeyInList = false)
 		{
 
 			// Temporary array to hold pointers to the nodes leading the path to the node that needs insertion
@@ -314,7 +332,7 @@ class LinkedPtrSkipList
 		 *  		  list. If its heigher than the current height a new layer will be added.
 		 * =====================================================================================
 		 */
-		int GenerateRandomHeight()
+		int generateRandomHeight()
 		{
 			// initialize the random bits
 			static int bitsUpperBd = 0;

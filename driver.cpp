@@ -44,31 +44,31 @@ string randString() {
 int main ( int argc, char *argv[] )
 {
 	LinkedPtrSkipList<MyObj>* list = new LinkedPtrSkipList<MyObj>();
-	list->Insert("A",CreateTestObj());
-	list->Insert("B",CreateTestObj());
-	list->Insert("C",CreateTestObj());
-	list->Insert("E",CreateTestObj());
-	list->Insert("D",CreateTestObj());
-	list->Insert("Bag",CreateTestObj());
-	list->Insert("Aag",CreateTestObj());
-	list->Insert("Ded",CreateTestObj());
-	list->Insert("Debil",CreateTestObj());
-	list->Insert("Hello",CreateTestObj());
-	list->Insert("Gambit",CreateTestObj());
-	list->Insert("Zong$",CreateTestObj());
-	list->Insert("zed",CreateTestObj());
+	list->insert("A",CreateTestObj());
+	list->insert("B",CreateTestObj());
+	list->insert("C",CreateTestObj());
+	list->insert("E",CreateTestObj());
+	list->insert("D",CreateTestObj());
+	list->insert("Bag",CreateTestObj());
+	list->insert("Aag",CreateTestObj());
+	list->insert("Ded",CreateTestObj());
+	list->insert("Debil",CreateTestObj());
+	list->insert("Hello",CreateTestObj());
+	list->insert("Gambit",CreateTestObj());
+	list->insert("Zong$",CreateTestObj());
+	list->insert("zed",CreateTestObj());
 
 	for(int n = 0; n < 10; n++) {
 
-		list->Insert(randString(),CreateTestObj());
+		list->insert(randString(),CreateTestObj());
 	}
 
-	list->DebugPrint();
+	list->debugPrint();
 
-	MyObj* bag = list->Find("Bag");
+	MyObj* bag = list->find("Bag");
 	cout << endl << "Found the ID under the key Bag is:" << bag->ID;
 
-	MyObj* gidi = list->Find("Gidi");
+	MyObj* gidi = list->find("Gidi");
 	if(gidi == NULL) {
 
 		cout << endl << "Couldn't find anything under the Key Gidi." << endl;
@@ -78,21 +78,21 @@ int main ( int argc, char *argv[] )
 
 	cout << endl << "Remove Debil" << endl;
 
-	MyObj* ded = list->Remove("Debil",false);
+	MyObj* ded = list->remove("Debil");
 	if(ded != NULL) {
 		cout << endl << "Remove returned node " << ded->ID << endl;
 	} else {
 		cout << endl << "Ded wan't found!" << endl;
 	}
-	list->DebugPrint();
+	list->debugPrint();
 
-	if(list->Exists("Aag")) {
+	if(list->exists("Aag")) {
 		cout << endl << "Aag exists!" << endl;
 	} else {
 		cout << endl << "Aag doesn't exist..." << endl;
 	}
 	
-	if(list->Exists("Debil")) {
+	if(list->exists("Debil")) {
 		cout << endl << "Debil exists!" << endl;
 	} else {
 		cout << endl << "Debil doesn't exist..." << endl;
