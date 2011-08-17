@@ -92,6 +92,11 @@ class LinkedPtrSkipList
 			this->mirror(other);
 		}
 
+		LinkedPtrSkipList& operator = ( const LinkedPtrSkipList& other )
+		{
+			this->mirror(&other);
+
+		}
 		/* 
 		 * ===  FUNCTION  ======================================================================
 		 *         Name:  size
