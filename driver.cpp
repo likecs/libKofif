@@ -58,7 +58,7 @@ int main ( int argc, char *argv[] )
 	list->insert("Zong$",CreateTestObj());
 	list->insert("zed",CreateTestObj());
 
-	for(int n = 0; n < 10; n++) {
+	for(int n = 0; n < 10000; n++) {
 
 		list->insert(randString(),CreateTestObj());
 	}

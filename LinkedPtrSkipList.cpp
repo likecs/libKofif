@@ -10,7 +10,7 @@
 using namespace std;
 
 // The Maximum number of layers the skip list can reach
-const int SKIPLIST_MAX_HEIGHT = 13;
+const int SKIPLIST_MAX_HEIGHT = 24;
 
 /*
  * =====================================================================================
@@ -50,6 +50,16 @@ class LinkedPtrSkipList
 			this->mHeight=0;
 			this->mpHead = NULL;	
 			this->mCounter = 0;
+		}
+
+
+		LinkedPtrSkipList ( const LinkedPtrSkipList &other ) 
+		{
+			this->mHeight=0;
+			this->mpHead = NULL;	
+			this->mCounter = 0;
+
+			this->mirror(&other);
 		}
 
 		LinkedPtrSkipList ( const LinkedPtrSkipList* other ) 
@@ -285,8 +295,8 @@ class LinkedPtrSkipList
 				srand ( time(NULL) );
 
 				// Create head array to hold pointers to nodes
-				this->mpHead = new Node<LinkedType>*[10]; //Define default size
-				for(int index = 0; index < 10; index++) {
+				this->mpHead = new Node<LinkedType>*[SKIPLIST_MAX_HEIGHT]; 
+				for(int index = 0; index < SKIPLIST_MAX_HEIGHT; index++) {
 					this->mpHead[index] = NULL;
 				}
 			}
