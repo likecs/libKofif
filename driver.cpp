@@ -4,6 +4,7 @@
 #include <time.h>
 #include <iostream>
 #include <string.h>
+#include <algorithm>
 #include "LinkedPtrSkipList.cpp"
 
 class MyObj
@@ -35,6 +36,9 @@ string randString() {
     return value;
 }
 
+void printpair(LinkedPtrSkipList<MyObj>::skipListPair p) {
+	cout << endl << p.Key() << ":" << p.Object()->ID;
+}
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  main
@@ -57,13 +61,23 @@ int main ( int argc, char *argv[] )
 	list->insert("Gambit",CreateTestObj());
 	list->insert("Zong$",CreateTestObj());
 	list->insert("zed",CreateTestObj());
-
+/*  
 	for(int n = 0; n < 10000; n++) {
 
 		list->insert(randString(),CreateTestObj());
 	}
-
+*/
 	list->debugPrint();
+
+	LinkedPtrSkipList<MyObj>::iterator itr;
+	for ( itr = list->begin() ; itr != list->end( ) ; itr++ ){
+		LinkedPtrSkipList<MyObj>::skipListPair p = *itr;
+		cout << endl << p.Key() << "," << p.Object()->ID;
+	}
+	cout << endl << endl;
+
+	for_each ( list->begin(), list->end(), printpair);
+	cout << endl;
 
 	MyObj* bag = list->find("Bag");
 	cout << endl << "Found the ID under the key Bag is:" << bag->ID;

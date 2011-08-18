@@ -76,6 +76,73 @@ class LinkedPtrSkipList
 			this->clear();
 		}
 
+
+		/*-----------------------------------------------------------------------------
+		 *  Iteration support
+		 *-----------------------------------------------------------------------------*/
+
+		class skipListPair : public pair<string,LinkedType*> {
+			friend class LinkedPtrSkipList;
+		public:
+			skipListPair(string Key, LinkedType* Object) : pair<string,LinkedType*>(Key,Object) {}
+			string Key() { return this->first;}
+			LinkedType* Object() {return this->second;}
+		};
+
+		class iterator {
+			friend class LinkedPtrSkipList;
+			Node<LinkedType>* mNode;
+		public:
+			iterator(Node<LinkedType>& node) : mNode(&node) {}
+			iterator(Node<LinkedType>* node = NULL) : mNode(node) {}
+			
+			iterator& operator++() 
+			{ 
+				mNode=mNode->Next[0]; 
+				return *this; 
+			}
+
+			iterator operator++(int a) 
+			{ 
+				iterator retval = *this; 
+				++*this; 
+				return retval; 
+			}
+
+			skipListPair operator*() const 
+			{ 
+				if(mNode == NULL) {
+					skipListPair p("",NULL);
+					return p;
+				}
+				skipListPair p(mNode->Key,mNode->Object);
+				return p;
+			}
+
+			bool operator==(const iterator& rhs) const 
+			{ 
+				return (mNode == rhs.mNode); 
+			}
+
+			bool operator!=(const iterator& rhs) const 
+			{ 
+				return (mNode != rhs.mNode); 
+			}
+		};
+
+		iterator begin() const { 
+			if(this->mHeight == 0) {
+				return NULL;
+			}
+
+			return iterator(this->mpHead[0]); 
+		}
+
+		iterator end() const { 
+			return NULL;
+		}
+			
+
 		/* 
 		 * ===  FUNCTION  ======================================================================
 		 *         Name:  operator =
@@ -97,6 +164,7 @@ class LinkedPtrSkipList
 			this->mirror(&other);
 
 		}
+
 		/* 
 		 * ===  FUNCTION  ======================================================================
 		 *         Name:  size
@@ -172,6 +240,7 @@ class LinkedPtrSkipList
 				
 				// There are no nodes prior to this one
 				this->mpHead[0] = createNode(Key,Object);
+				this->mpTail == this->mpHead[0]; // the tail is the new element
 				this->mHeight = 1;
 			} else {
 				Node<LinkedType>* node = NULL;
@@ -207,7 +276,13 @@ class LinkedPtrSkipList
 						nodePath[layerIndex]->Next[layerIndex] = node;
 					}
 				}
+
+				if(node->Next[0] == NULL) {
+					// if the next node on layer 0 is NULL that means this is the new tail
+					this->mpTail = node;
+				}
 			}
+
 			
 			// increase the node count
 			this->mCounter++;
@@ -472,6 +547,7 @@ class LinkedPtrSkipList
 		int 			mHeight;
 		int			mCounter;
 		Node<LinkedType>**	mpHead;
+		Node<LinkedType>*	mpTail;  // need tail for iterator
 }; /* -----  end of template class LinkedPtrSkipList  ----- */
 
 
